@@ -9,6 +9,10 @@ internal static class CSharpierIgnore
     public static readonly Regex IgnoreStartRegex = new("^// csharpier-ignore-start($| -)");
     public static readonly Regex IgnoreEndRegex = new("^// csharpier-ignore-end($| -)");
 
+    public static readonly Regex IgnoreStartRegexVS = new("^#pragma( +)warning( +)disable +format($| +)(//|/*)");
+    public static readonly Regex IgnoreEndRegexVS = new("^#pragma( +)warning( +)+enable( +)format($| +)(//|/*)");
+
+
     public static bool HasIgnoreComment(SyntaxNode syntaxNode) =>
         Token.HasLeadingCommentMatching(syntaxNode, IgnoreRegex);
 
@@ -46,13 +50,15 @@ internal static class CSharpierIgnore
 
         foreach (var node in list)
         {
-            if (Token.HasLeadingCommentMatching(node, IgnoreEndRegex))
+            if (Token.HasLeadingCommentMatching(node, IgnoreEndRegex) ||
+                Token.HasLeadingCommentMatching(node, IgnoreEndRegexVS))
             {
                 statements.Add(unFormattedCode.ToString().Trim());
                 unFormattedCode.Clear();
                 printUnformatted = false;
             }
-            else if (Token.HasLeadingCommentMatching(node, IgnoreStartRegex))
+            else if (Token.HasLeadingCommentMatching(node, IgnoreStartRegex) ||
+                     Token.HasLeadingCommentMatching(node, IgnoreStartRegexVS))
             {
                 printUnformatted = true;
             }
